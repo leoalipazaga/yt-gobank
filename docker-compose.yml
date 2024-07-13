@@ -1,0 +1,31 @@
+version: "3.7"
+services:
+  db:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=gobank
+    ports:
+      - 5432:5432
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "gobank"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  gobank:
+    build: .
+    container_name: gobank
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+    command: make run
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy

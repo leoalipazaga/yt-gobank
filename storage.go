@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	_ "github.com/lib/pq"
 )
@@ -27,7 +28,7 @@ func (s *PostgresStore) Init() error {
 }
 
 func (s *PostgresStore) createAccountTable() error {
-	query := `create table if not exists account(
+	query := `CREATE TABLE IF NOT EXISTS account(
     id serial primary key,
     first_name varchar(50),
     last_name varchar(50),
@@ -41,7 +42,11 @@ func (s *PostgresStore) createAccountTable() error {
 }
 
 func NewPostgresStore() (*PostgresStore, error) {
-	conn := "user=postgres dbname=gobank password=postgres sslmode=disable"
+	conn := fmt.Sprintf("host=db user=%s dbname=%s password=%s sslmode=disable",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PASSWORD"),
+	)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
 		return nil, err
